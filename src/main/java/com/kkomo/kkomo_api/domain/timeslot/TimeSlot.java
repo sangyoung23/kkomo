@@ -2,6 +2,8 @@ package com.kkomo.kkomo_api.domain.timeslot;
 
 import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.global.common.BaseEntity;
+import com.kkomo.kkomo_api.global.exception.BusinessException;
+import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,9 +20,9 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class TimeSlot extends BaseEntity {
 
     @Id
@@ -38,16 +40,26 @@ public class TimeSlot extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime endDateTime;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TimeSlotStatus status = TimeSlotStatus.AVAILABLE;
+    private TimeSlotStatus status;
 
-    public void assignShop(Shop shop) {
-        this.shop = shop;
+    public void validateReservable() {
+        if (this.status == TimeSlotStatus.RESERVED) {
+            throw new BusinessException(ErrorCode.TIME_SLOT_ALREADY_RESERVED);
+        }
+        if (this.status == TimeSlotStatus.BLOCKED) {
+            throw new BusinessException(ErrorCode.TIME_SLOT_BLOCKED);
+        }
     }
 
-    public void changeStatus(TimeSlotStatus status) {
-        this.status = status;
+    public void reserve() {
+        validateReservable();
+        this.status = TimeSlotStatus.RESERVED;
+    }
+
+    public void release() {
+        this.status = TimeSlotStatus.AVAILABLE;
     }
 }
+

@@ -12,9 +12,9 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "tb_reservations")
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class Reservation extends BaseEntity {
 
     @Id
@@ -34,15 +34,37 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "time_slot_id", nullable = false, unique = true)
     private TimeSlot timeSlot;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ReservationStatus status = ReservationStatus.PENDING;
+    private ReservationStatus status;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal depositAmount;
 
-    public void changeStatus(ReservationStatus status) {
-        this.status = status;
+    public static Reservation create(User user, Pet pet, TimeSlot timeSlot, BigDecimal depositAmount) {
+
+        if (depositAmount == null || depositAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("보증금은 0 이상이어야 합니다.");
+        }
+
+        return Reservation.builder()
+                .user(user)
+                .pet(pet)
+                .timeSlot(timeSlot)
+                .depositAmount(depositAmount)
+                .status(ReservationStatus.PENDING)
+                .build();
+    }
+
+    public void confirm() {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("예약 상태 변경 불가");
+        }
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        this.status = ReservationStatus.CANCELLED;
     }
 }
+
