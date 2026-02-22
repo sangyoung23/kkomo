@@ -1,4 +1,4 @@
-package com.kkomo.kkomo_api.domain;
+package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.pet.Pet;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;

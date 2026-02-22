@@ -1,4 +1,4 @@
-package com.kkomo.kkomo_api.domain;
+package com.kkomo.kkomo_api.domain.reservation;
 
 public enum ReservationStatus {
     PENDING,        // 예약 요청
