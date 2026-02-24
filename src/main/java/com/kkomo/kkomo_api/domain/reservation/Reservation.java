@@ -4,6 +4,8 @@ import com.kkomo.kkomo_api.domain.pet.Pet;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
 import com.kkomo.kkomo_api.domain.user.User;
 import com.kkomo.kkomo_api.global.common.BaseEntity;
+import com.kkomo.kkomo_api.global.exception.BusinessException;
+import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,7 +46,7 @@ public class Reservation extends BaseEntity {
     public static Reservation create(User user, Pet pet, TimeSlot timeSlot, BigDecimal depositAmount) {
 
         if (depositAmount == null || depositAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("보증금은 0 이상이어야 합니다.");
+            throw new BusinessException(ErrorCode.INVALID_DEPOSIT_AMOUNT);
         }
 
         return Reservation.builder()
@@ -58,13 +60,24 @@ public class Reservation extends BaseEntity {
 
     public void confirm() {
         if (this.status != ReservationStatus.PENDING) {
-            throw new IllegalStateException("예약 상태 변경 불가");
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
         }
         this.status = ReservationStatus.CONFIRMED;
     }
 
     public void cancel() {
+        if (this.status == ReservationStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
+
+        if (this.status == ReservationStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
+
         this.status = ReservationStatus.CANCELLED;
+
+        this.timeSlot.release();
     }
+
 }
 
