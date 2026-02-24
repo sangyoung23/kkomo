@@ -59,7 +59,11 @@ public class TimeSlot extends BaseEntity {
     }
 
     public void release() {
+        if (this.status != TimeSlotStatus.RESERVED) {
+            throw new BusinessException(ErrorCode.INVALID_TIME_SLOT_STATE);
+        }
         this.status = TimeSlotStatus.AVAILABLE;
     }
+
 }
 
