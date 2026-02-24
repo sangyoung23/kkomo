@@ -1,6 +1,7 @@
 package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.pet.Pet;
+import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
 import com.kkomo.kkomo_api.domain.user.User;
 import com.kkomo.kkomo_api.global.common.BaseEntity;
@@ -33,6 +34,10 @@ public class Reservation extends BaseEntity {
     private Pet pet;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "time_slot_id", nullable = false, unique = true)
     private TimeSlot timeSlot;
 
@@ -43,7 +48,7 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal depositAmount;
 
-    public static Reservation create(User user, Pet pet, TimeSlot timeSlot, BigDecimal depositAmount) {
+    public static Reservation create(User user, Pet pet, Shop shop, TimeSlot timeSlot, BigDecimal depositAmount) {
 
         if (depositAmount == null || depositAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new BusinessException(ErrorCode.INVALID_DEPOSIT_AMOUNT);
@@ -52,6 +57,7 @@ public class Reservation extends BaseEntity {
         return Reservation.builder()
                 .user(user)
                 .pet(pet)
+                .shop(shop)
                 .timeSlot(timeSlot)
                 .depositAmount(depositAmount)
                 .status(ReservationStatus.PENDING)
