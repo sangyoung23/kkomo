@@ -1,5 +1,6 @@
 package com.kkomo.kkomo_api.domain.user;
 
+import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

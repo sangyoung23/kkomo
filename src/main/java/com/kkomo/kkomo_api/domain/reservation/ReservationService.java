@@ -2,6 +2,11 @@ package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.pet.Pet;
 import com.kkomo.kkomo_api.domain.pet.PetRepository;
+import com.kkomo.kkomo_api.domain.reservation.dto.ReservationCreateRequest;
+import com.kkomo.kkomo_api.domain.reservation.dto.ReservationDetailResponse;
+import com.kkomo.kkomo_api.domain.reservation.dto.ReservationListResponse;
+import com.kkomo.kkomo_api.domain.shop.Shop;
+import com.kkomo.kkomo_api.domain.shop.ShopRepository;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlotRepository;
 import com.kkomo.kkomo_api.domain.user.User;
@@ -12,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,24 +26,44 @@ public class ReservationService {
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
     private final PetRepository petRepository;
+    private final ShopRepository shopRepository;
     private final ReservationRepository reservationRepository;
+    private final ReservationQueryRepository reservationQueryRepository;
+
+    // 예약 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReservationListResponse> getReservations(Long shopId, Long userId) {
+        return reservationQueryRepository.findReservationList(shopId, userId);
+    }
+
+    // 예약 상세 조회
+    @Transactional(readOnly = true)
+    public ReservationDetailResponse getReservationDetail(Long reservationId) {
+        Reservation reservation = reservationRepository.findWithUserAndPetAndTimeSlotById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        return ReservationDetailResponse.from(reservation);
+    }
 
     // 예약 생성
     @Transactional
-    public Long createReservation(Long userId, Long petId, Long timeSlotId, BigDecimal depositAmount) {
+    public Long createReservation(ReservationCreateRequest request) {
 
-        TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId)
+        TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
 
         timeSlot.validateReservable();
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(request.getPetId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
 
-        Reservation reservation = Reservation.create(user, pet, timeSlot, depositAmount);
+        Shop shop = shopRepository.findById(request.getShopId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHOP_NOT_FOUND));
+
+        Reservation reservation = Reservation.create(user, pet, shop, timeSlot, request.getDepositAmount());
 
         reservationRepository.save(reservation);
 

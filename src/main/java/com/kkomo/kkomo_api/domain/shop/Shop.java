@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_shops")
@@ -20,8 +21,11 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_id")
     private Long id;
 
+    @OneToMany(mappedBy = "shop")
+    private List<User> users;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     @Column(nullable = false, length = 100)
