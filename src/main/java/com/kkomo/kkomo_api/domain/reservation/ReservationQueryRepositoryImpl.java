@@ -1,13 +1,17 @@
 package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.pet.QPet;
-import com.kkomo.kkomo_api.domain.reservation.dto.ReservationListResponse;
+import com.kkomo.kkomo_api.domain.reservation.dto.CustomerReservationListResponse;
+import com.kkomo.kkomo_api.domain.reservation.dto.OwnerReservationListResponse;
 import com.kkomo.kkomo_api.domain.shop.QShop;
 import com.kkomo.kkomo_api.domain.timeslot.QTimeSlot;
 import com.kkomo.kkomo_api.domain.user.QUser;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -17,21 +21,57 @@ public class ReservationQueryRepositoryImpl implements ReservationQueryRepositor
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<ReservationListResponse> findReservationList(Long shopId, Long userId) {
+    public Page<CustomerReservationListResponse> getCustomerReservations(Long userId, Pageable pageable) {
 
         QReservation reservation = QReservation.reservation;
-        QUser user = QUser.user;
         QPet pet = QPet.pet;
         QShop shop = QShop.shop;
         QTimeSlot timeSlot = QTimeSlot.timeSlot;
 
-        return queryFactory
-                .select(Projections.constructor(ReservationListResponse.class,
+        List<CustomerReservationListResponse> content = queryFactory
+                .select(Projections.constructor(CustomerReservationListResponse.class,
                         reservation.id,
+                        shop.name,
                         pet.name,
+                        timeSlot.startDateTime,
+                        timeSlot.endDateTime,
+                        reservation.depositAmount,
+                        reservation.status.stringValue()
+                ))
+                .from(reservation)
+                .join(reservation.shop, shop)
+                .join(reservation.pet, pet)
+                .join(reservation.timeSlot, timeSlot)
+                .where(reservation.user.id.eq(userId))
+                .orderBy(reservation.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(reservation.count())
+                .from(reservation)
+                .where(reservation.user.id.eq(userId))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+
+    @Override
+    public Page<OwnerReservationListResponse> getOwnerReservations(Long shopId, Pageable pageable) {
+
+        QReservation reservation = QReservation.reservation;
+        QUser user = QUser.user;
+        QPet pet = QPet.pet;
+        QTimeSlot timeSlot = QTimeSlot.timeSlot;
+
+        List<OwnerReservationListResponse> content = queryFactory
+                .select(Projections.constructor(OwnerReservationListResponse.class,
+                        reservation.id,
                         user.name,
-                        shop.id,
                         user.phoneNumber,
+                        pet.name,
                         timeSlot.startDateTime,
                         timeSlot.endDateTime,
                         reservation.depositAmount,
@@ -40,10 +80,20 @@ public class ReservationQueryRepositoryImpl implements ReservationQueryRepositor
                 .from(reservation)
                 .join(reservation.user, user)
                 .join(reservation.pet, pet)
-                .join(reservation.shop, shop)
                 .join(reservation.timeSlot, timeSlot)
-                .where(reservation.shop.id.eq(shopId).and(reservation.user.id.eq(userId)))
+                .where(reservation.shop.id.eq(shopId))
+                .orderBy(timeSlot.startDateTime.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        Long total = queryFactory
+                .select(reservation.count())
+                .from(reservation)
+                .where(reservation.shop.id.eq(shopId))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
     }
 }
 

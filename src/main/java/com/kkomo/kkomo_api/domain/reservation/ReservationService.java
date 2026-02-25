@@ -2,9 +2,10 @@ package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.pet.Pet;
 import com.kkomo.kkomo_api.domain.pet.PetRepository;
+import com.kkomo.kkomo_api.domain.reservation.dto.CustomerReservationListResponse;
+import com.kkomo.kkomo_api.domain.reservation.dto.OwnerReservationListResponse;
 import com.kkomo.kkomo_api.domain.reservation.dto.ReservationCreateRequest;
 import com.kkomo.kkomo_api.domain.reservation.dto.ReservationDetailResponse;
-import com.kkomo.kkomo_api.domain.reservation.dto.ReservationListResponse;
 import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.domain.shop.ShopRepository;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
@@ -17,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +32,16 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationQueryRepository reservationQueryRepository;
 
-    // 예약 목록 조회
+    // 고객용 예약 목록 조회
     @Transactional(readOnly = true)
-    public List<ReservationListResponse> getReservations(Long shopId, Long userId) {
-        return reservationQueryRepository.findReservationList(shopId, userId);
+    public Page<CustomerReservationListResponse> getCustomerReservations(Long userId, Pageable pageable) {
+        return reservationQueryRepository.getCustomerReservations(userId, pageable);
+    }
+
+    // 사장용 예약 목록 조회
+    @Transactional(readOnly = true)
+    public Page<OwnerReservationListResponse> getOwnerReservations(Long shopId, Pageable pageable) {
+        return reservationQueryRepository.getOwnerReservations(shopId, pageable);
     }
 
     // 예약 상세 조회
