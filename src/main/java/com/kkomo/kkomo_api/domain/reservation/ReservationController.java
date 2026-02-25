@@ -1,13 +1,15 @@
 package com.kkomo.kkomo_api.domain.reservation;
 
+import com.kkomo.kkomo_api.domain.reservation.dto.CustomerReservationListResponse;
+import com.kkomo.kkomo_api.domain.reservation.dto.OwnerReservationListResponse;
 import com.kkomo.kkomo_api.domain.reservation.dto.ReservationCreateRequest;
 import com.kkomo.kkomo_api.domain.reservation.dto.ReservationDetailResponse;
-import com.kkomo.kkomo_api.domain.reservation.dto.ReservationListResponse;
 import com.kkomo.kkomo_api.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/reservation")
@@ -16,14 +18,19 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    // 예약 목록 조회
     // TODO
-    // 1. Spring Security 적용 후 AuthenticationPrincipal 방식으로 변경
-    @GetMapping
-    public ApiResponse<List<ReservationListResponse>> getReservations(
-            @RequestParam Long shopId,
-            @RequestParam Long userId) {
-        return ApiResponse.success(reservationService.getReservations(shopId, userId));
+    // 1. 예약 조회 Spring Security 적용 후 AuthenticationPrincipal 방식으로 변경
+
+    // 고객용 예약 목록 조회
+    @GetMapping("/customer")
+    public ApiResponse<Page<CustomerReservationListResponse>> getCustomerReservations(@RequestParam Long userId, Pageable pageable) {
+        return ApiResponse.success(reservationService.getCustomerReservations(userId, pageable));
+    }
+
+    // 사장용 예약 목록 조회
+    @GetMapping("/owner")
+    public ApiResponse<Page<OwnerReservationListResponse>> getOwnerReservations(@RequestParam Long shopId, Pageable pageable) {
+        return ApiResponse.success(reservationService.getOwnerReservations(shopId, pageable));
     }
 
     // 예약 상세 조회
