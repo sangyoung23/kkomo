@@ -15,6 +15,7 @@ import com.kkomo.kkomo_api.domain.user.UserRepository;
 import com.kkomo.kkomo_api.global.exception.BusinessException;
 import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,28 +58,36 @@ public class ReservationService {
     @Transactional
     public Long createReservation(ReservationCreateRequest request) {
 
-        TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
+        try {
+            TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
 
-        timeSlot.validateReservable();
+            timeSlot.validateReservable();
 
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            User user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        Pet pet = petRepository.findById(request.getPetId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
+            Pet pet = petRepository.findById(request.getPetId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
 
-        Shop shop = shopRepository.findById(request.getShopId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.SHOP_NOT_FOUND));
+            Shop shop = shopRepository.findById(request.getShopId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SHOP_NOT_FOUND));
 
-        Reservation reservation = Reservation.create(user, pet, shop, timeSlot, request.getDepositAmount());
+            timeSlot.reserve();
 
-        reservationRepository.save(reservation);
+            Reservation reservation = Reservation.create(
+                    user, pet, shop, timeSlot, request.getDepositAmount()
+            );
 
-        timeSlot.reserve();
+            reservationRepository.save(reservation);
 
-        return reservation.getId();
+            return reservation.getId();
+
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new BusinessException(ErrorCode.TIME_SLOT_ALREADY_RESERVED);
+        }
     }
+
 
     // 예약 확정
     @Transactional
