@@ -30,6 +30,10 @@ public class TimeSlot extends BaseEntity {
     @Column(name = "time_slot_id")
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
