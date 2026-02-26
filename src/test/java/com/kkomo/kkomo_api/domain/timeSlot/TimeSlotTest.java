@@ -22,6 +22,8 @@ class TimeSlotTest {
         );
     }
 
+    // ===== validateReservable() =====
+
     @Test
     @DisplayName("예약 가능한 타임슬롯은 validateReservable 통과한다.")
     void validateReservable_success() {
@@ -42,8 +44,11 @@ class TimeSlotTest {
                 .hasMessage(ErrorCode.TIME_SLOT_ALREADY_RESERVED.getMessage());
     }
 
+
+    // ===== reserve() =====
+
     @Test
-    @DisplayName("release 호출하면 상태가 RESERVED 상태로 번경된다")
+    @DisplayName("reserve 호출하면 상태가 RESERVED 상태로 변경된다")
     void reserve_success() {
         TimeSlot timeSlot = createAvailableTimeSlot();
 
@@ -53,8 +58,11 @@ class TimeSlotTest {
                 .isEqualTo(TimeSlotStatus.RESERVED);
     }
 
+
+    // ===== release() =====
+
     @Test
-    @DisplayName("release 호출하면 상태가 AVAILABLE 상태로 번경된다")
+    @DisplayName("release 호출하면 상태가 AVAILABLE 상태로 변경된다")
     void release_success() {
         TimeSlot timeSlot = createAvailableTimeSlot();
         timeSlot.reserve();
@@ -75,3 +83,4 @@ class TimeSlotTest {
                 .hasMessage(ErrorCode.INVALID_TIME_SLOT_STATE.getMessage());
     }
 }
+
