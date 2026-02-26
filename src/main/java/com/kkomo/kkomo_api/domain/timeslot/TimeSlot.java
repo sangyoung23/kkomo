@@ -48,6 +48,15 @@ public class TimeSlot extends BaseEntity {
     @Column(nullable = false, length = 20)
     private TimeSlotStatus status;
 
+    public static TimeSlot create(Shop shop, LocalDateTime start, LocalDateTime end) {
+        return TimeSlot.builder()
+                .shop(shop)
+                .startDateTime(start)
+                .endDateTime(end)
+                .status(TimeSlotStatus.AVAILABLE)
+                .build();
+    }
+
     public void validateReservable() {
         if (this.status == TimeSlotStatus.RESERVED) {
             throw new BusinessException(ErrorCode.TIME_SLOT_ALREADY_RESERVED);
