@@ -79,9 +79,9 @@ public class ReservationService {
                     user, pet, shop, timeSlot, request.getDepositAmount()
             );
 
-            reservationRepository.save(reservation);
+            Reservation saved = reservationRepository.save(reservation);
 
-            return reservation.getId();
+            return saved.getId();
 
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new BusinessException(ErrorCode.TIME_SLOT_ALREADY_RESERVED);
@@ -93,14 +93,11 @@ public class ReservationService {
     @Transactional
     public Long confirmReservation(Long reservationId) {
 
-        // 1. 예약 조회
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        // 2. 상태 검증 ( 어떤 상태일 때 예약 확정이 가능할지 ), 상태 변경(예약 확정)
         reservation.confirm();
 
-        // 3. 예약 id 리턴
         return reservation.getId();
     }
 
@@ -108,14 +105,11 @@ public class ReservationService {
     @Transactional
     public Long cancelReservation(Long reservationId) {
 
-        // 1. 예약 조회
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        // 2. 예약 상태 검증, 상태 변경, TimeSlot 복구
         reservation.cancel();
 
-        // 3. id 반환
         return reservation.getId();
     }
 
