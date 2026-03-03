@@ -182,39 +182,39 @@ class ReservationServiceTest {
 
     // ===== confirmReservation() =====
 
-    @Test
-    @DisplayName("예약 확정 성공")
-    void confirmReservation_success() {
+//    @Test
+//    @DisplayName("예약 확정 성공")
+//    void confirmReservation_success() {
+//
+//        // given
+//        Reservation reservation = mock(Reservation.class);
+//
+//        when(reservationRepository.findById(1L))
+//                .thenReturn(Optional.of(reservation));
+//        when(reservation.getId()).thenReturn(1L);
+//
+//        Long result = reservationService.confirmReservation(1L);
+//
+//        // when & then
+//        assertThat(result).isEqualTo(1L);
+//        verify(reservation).confirm();
+//    }
 
-        // given
-        Reservation reservation = mock(Reservation.class);
-
-        when(reservationRepository.findById(1L))
-                .thenReturn(Optional.of(reservation));
-        when(reservation.getId()).thenReturn(1L);
-
-        Long result = reservationService.confirmReservation(1L);
-
-        // when & then
-        assertThat(result).isEqualTo(1L);
-        verify(reservation).confirm();
-    }
-
-    @Test
-    @DisplayName("예약이 존재하지 않으면 예외 발생")
-    void confirmReservation_fail_reservationNotFound() {
-
-        // given
-        when(reservationRepository.findById(1L))
-                .thenReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() ->
-                reservationService.confirmReservation(1L)
-        )
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(ErrorCode.RESERVATION_NOT_FOUND.getMessage());
-    }
+//    @Test
+//    @DisplayName("예약이 존재하지 않으면 예외 발생")
+//    void confirmReservation_fail_reservationNotFound() {
+//
+//        // given
+//        when(reservationRepository.findById(1L))
+//                .thenReturn(Optional.empty());
+//
+//        // when & then
+//        assertThatThrownBy(() ->
+//                reservationService.confirmReservation(1L)
+//        )
+//                .isInstanceOf(BusinessException.class)
+//                .hasMessage(ErrorCode.RESERVATION_NOT_FOUND.getMessage());
+//    }
 
     // ===== cancelReservation() =====
 

@@ -37,14 +37,14 @@ class ReservationTest {
     // ===== create() =====
 
     @Test
-    @DisplayName("정상 생성 시 상태는 PENDING이다")
+    @DisplayName("정상 생성 시 상태는 WAITING_PAYMENT이다")
     void create_success() {
         TimeSlot timeSlot = createReservedTimeSlot();
 
         Reservation reservation = createPendingReservation(timeSlot);
 
         assertThat(reservation.getStatus())
-                .isEqualTo(ReservationStatus.PENDING);
+                .isEqualTo(ReservationStatus.WAITING_PAYMENT);
     }
 
     @Test
