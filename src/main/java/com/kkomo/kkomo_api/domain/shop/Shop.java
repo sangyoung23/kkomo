@@ -54,10 +54,10 @@ public class Shop extends BaseEntity {
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 7)
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Column(nullable = false, precision = 10, scale = 7)
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
