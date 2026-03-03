@@ -46,10 +46,10 @@ public class ReservationController {
     }
 
     // 예약 확정
-    @PostMapping("/{reservationId}/confirm")
-    public ApiResponse<Long> confirmReservation(@PathVariable Long reservationId) {
-        return ApiResponse.success(reservationService.confirmReservation(reservationId));
-    }
+//    @PostMapping("/{reservationId}/confirm")
+//    public ApiResponse<Long> confirmReservation(@PathVariable Long reservationId) {
+//        return ApiResponse.success(reservationService.confirmReservation(reservationId));
+//    }
 
     // 예약 취소
     @PostMapping("/{reservationId}/cancel")

@@ -85,16 +85,16 @@ public class ReservationService {
 
 
     // 예약 확정
-    @Transactional
-    public Long confirmReservation(Long reservationId) {
-
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
-
-        reservation.confirm();
-
-        return reservation.getId();
-    }
+//    @Transactional
+//    public Long confirmReservation(Long reservationId) {
+//
+//        Reservation reservation = reservationRepository.findById(reservationId)
+//                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+//
+//        reservation.confirm();
+//
+//        return reservation.getId();
+//    }
 
     // 예약 취소
     @Transactional
