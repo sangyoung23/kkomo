@@ -26,7 +26,12 @@ public enum ErrorCode {
     INVALID_DEPOSIT_AMOUNT(5003, HttpStatus.BAD_REQUEST, "보증금은 0 이상이어야 합니다."),
 
     // SHOP (6000번대)
-    SHOP_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "샵을 찾을 수 없습니다.");
+    SHOP_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "샵을 찾을 수 없습니다."),
+
+    // PAYMENT (7000번대)
+    PAYMENT_NOT_FOUND(7001, HttpStatus.NOT_FOUND, "결제 내역을 찾을 수 없습니다."),
+    INVALID_PAYMENT_STATE(7002, HttpStatus.BAD_REQUEST, "결제 상태가 올바르지 않습니다."),
+    INVALID_REFUND_AMOUNT(7003, HttpStatus.BAD_REQUEST, "환불 금액이 올바르지 않습니다.");
 
     private final int code;           // 비즈니스 코드
     private final HttpStatus status;  // HTTP 상태코드
