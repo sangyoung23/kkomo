@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -21,7 +24,22 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // 예상 못 한 서버 에러
+    @ExceptionHandler({
+            OptimisticLockingFailureException.class,
+            DataIntegrityViolationException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleConcurrencyException(Exception e) {
+
+        ErrorCode errorCode = ErrorCode.TIME_SLOT_ALREADY_RESERVED;
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ApiResponse.fail(
+                        errorCode.getCode(),
+                        errorCode.getMessage()
+                ));
+    }
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
 
