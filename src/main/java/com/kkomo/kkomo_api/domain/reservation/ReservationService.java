@@ -58,34 +58,29 @@ public class ReservationService {
     @Transactional
     public Long createReservation(ReservationCreateRequest request) {
 
-        try {
-            TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
+        TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
 
-            timeSlot.validateReservable();
+        timeSlot.validateReservable();
 
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-            Pet pet = petRepository.findById(request.getPetId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
+        Pet pet = petRepository.findById(request.getPetId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
 
-            Shop shop = shopRepository.findById(request.getShopId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.SHOP_NOT_FOUND));
+        Shop shop = shopRepository.findById(request.getShopId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHOP_NOT_FOUND));
 
-            timeSlot.reserve();
+        timeSlot.reserve();
 
-            Reservation reservation = Reservation.create(
-                    user, pet, shop, timeSlot, request.getDepositAmount()
-            );
+        Reservation reservation = Reservation.create(
+                user, pet, shop, timeSlot, request.getDepositAmount()
+        );
 
-            Reservation saved = reservationRepository.save(reservation);
+        Reservation saved = reservationRepository.save(reservation);
 
-            return saved.getId();
-
-        } catch (ObjectOptimisticLockingFailureException e) {
-            throw new BusinessException(ErrorCode.TIME_SLOT_ALREADY_RESERVED);
-        }
+        return saved.getId();
     }
 
 
