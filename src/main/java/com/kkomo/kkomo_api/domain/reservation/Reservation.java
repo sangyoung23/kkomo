@@ -60,12 +60,12 @@ public class Reservation extends BaseEntity {
                 .shop(shop)
                 .timeSlot(timeSlot)
                 .depositAmount(depositAmount)
-                .status(ReservationStatus.PENDING)
+                .status(ReservationStatus.WAITING_PAYMENT)
                 .build();
     }
 
     public void confirm() {
-        if (this.status != ReservationStatus.PENDING) {
+        if (this.status != ReservationStatus.WAITING_PAYMENT) {
             throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
         }
         this.status = ReservationStatus.CONFIRMED;
@@ -79,11 +79,9 @@ public class Reservation extends BaseEntity {
     }
 
     public void cancel() {
-        if (this.status == ReservationStatus.CANCELLED) {
-            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
-        }
-
-        if (this.status == ReservationStatus.COMPLETED) {
+        if (this.status == ReservationStatus.CANCELLED
+                || this.status == ReservationStatus.COMPLETED
+                || this.status == ReservationStatus.NO_SHOW) {
             throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
         }
 
