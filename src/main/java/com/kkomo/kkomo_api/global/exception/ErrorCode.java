@@ -29,9 +29,11 @@ public enum ErrorCode {
     SHOP_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "샵을 찾을 수 없습니다."),
 
     // PAYMENT (7000번대)
-    PAYMENT_NOT_FOUND(7001, HttpStatus.NOT_FOUND, "결제 내역을 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND(7000, HttpStatus.NOT_FOUND, "결제를 찾을 수 없습니다."),
+    ALREADY_PAID(7001, HttpStatus.CONFLICT, "이미 결제가 완료된 예약입니다."),
     INVALID_PAYMENT_STATE(7002, HttpStatus.BAD_REQUEST, "결제 상태가 올바르지 않습니다."),
-    INVALID_REFUND_AMOUNT(7003, HttpStatus.BAD_REQUEST, "환불 금액이 올바르지 않습니다.");
+    INVALID_REFUND_AMOUNT(7003, HttpStatus.BAD_REQUEST, "환불 금액이 올바르지 않습니다."),
+    INVALID_PAYMENT_AMOUNT(7004, HttpStatus.BAD_REQUEST, "결제 금액이 예약 금액과 일치하지 않습니다.");
 
     private final int code;           // 비즈니스 코드
     private final HttpStatus status;  // HTTP 상태코드
