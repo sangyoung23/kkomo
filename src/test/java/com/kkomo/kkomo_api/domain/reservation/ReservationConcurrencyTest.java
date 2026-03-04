@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -74,6 +75,7 @@ class ReservationConcurrencyTest {
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
 
         Long customerId = customer.getId();
         Long petId = pet.getId();
@@ -96,7 +98,8 @@ class ReservationConcurrencyTest {
                     reservationService.createReservation(request);
                     successCount.incrementAndGet();
 
-                } catch (Exception ignored) {
+                } catch (ObjectOptimisticLockingFailureException e) {
+                    failCount.incrementAndGet();
                 } finally {
                     latch.countDown();
                 }
