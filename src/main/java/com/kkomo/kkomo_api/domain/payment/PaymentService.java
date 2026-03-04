@@ -34,6 +34,8 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
+    // TODO
+    // 1. 결제 요청 -> PG 결제 진행 -> PG 콜백 -> completePayment 호출
     // 결제 성공
     @Transactional
     public void completePayment(Long paymentId) {
