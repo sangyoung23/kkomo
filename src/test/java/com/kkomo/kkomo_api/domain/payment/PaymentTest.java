@@ -50,11 +50,11 @@ class PaymentTest {
         }
 
         static Payment createPendingPayment() {
-            return Payment.create(createPendingReservation(), BigDecimal.valueOf(10000));
+            return Payment.create(createPendingReservation(), false, BigDecimal.valueOf(10000));
         }
 
         static Payment createPendingPaymentWithReservation(Reservation reservation) {
-            return Payment.create(reservation, BigDecimal.valueOf(10000));
+            return Payment.create(reservation, false, BigDecimal.valueOf(10000));
         }
     }
 
@@ -71,7 +71,7 @@ class PaymentTest {
     void create_fail_whenAmountNull() {
         Reservation reservation = TestFactory.createPendingReservation();
 
-        assertThatThrownBy(() -> Payment.create(reservation, null))
+        assertThatThrownBy(() -> Payment.create(reservation, false, null))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.INVALID_DEPOSIT_AMOUNT.getMessage());
     }
@@ -81,7 +81,7 @@ class PaymentTest {
     void create_fail_whenAmountNegative() {
         Reservation reservation = TestFactory.createPendingReservation();
 
-        assertThatThrownBy(() -> Payment.create(reservation, BigDecimal.valueOf(-1)))
+        assertThatThrownBy(() -> Payment.create(reservation, false, BigDecimal.valueOf(-1)))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.INVALID_DEPOSIT_AMOUNT.getMessage());
     }
@@ -157,7 +157,7 @@ class PaymentTest {
     @DisplayName("SUCCESS 상태 + 예약 CONFIRMED -> refund() 성공")
     void refund_success() throws Exception {
         Reservation reservation = TestFactory.createReservationWithStatus(ReservationStatus.WAITING_PAYMENT);
-        Payment payment = Payment.create(reservation, BigDecimal.valueOf(10000));
+        Payment payment = Payment.create(reservation, false, BigDecimal.valueOf(10000));
 
         payment.complete();
 
@@ -208,7 +208,7 @@ class PaymentTest {
     @DisplayName("Payment 상태가 SUCCESS가 아니면 refund() 예외 발생")
     void refund_fail_whenPaymentNotSuccess() {
         Reservation reservation = TestFactory.createReservationWithStatus(ReservationStatus.CONFIRMED);
-        Payment payment = Payment.create(reservation, BigDecimal.valueOf(10000));
+        Payment payment = Payment.create(reservation, false, BigDecimal.valueOf(10000));
 
         assertThatThrownBy(() -> payment.refund(BigDecimal.valueOf(5000)))
                 .isInstanceOf(BusinessException.class)
@@ -219,7 +219,7 @@ class PaymentTest {
     @DisplayName("Reservation 상태가 CONFIRMED가 아니면 refund() 예외 발생")
     void refund_fail_whenReservationNotConfirmed() throws Exception {
         Reservation reservation = TestFactory.createReservationWithStatus(ReservationStatus.WAITING_PAYMENT);
-        Payment payment = Payment.create(reservation, BigDecimal.valueOf(10000));
+        Payment payment = Payment.create(reservation, false, BigDecimal.valueOf(10000));
 
         var statusField = Payment.class.getDeclaredField("status");
         statusField.setAccessible(true);
