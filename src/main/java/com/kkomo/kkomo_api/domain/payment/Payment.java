@@ -38,11 +38,16 @@ public class Payment extends BaseEntity {
     @Column(nullable = false, length = 20)
     private PaymentStatus status = PaymentStatus.PENDING;
 
-    public static Payment create(Reservation reservation, BigDecimal amount) {
+    public static Payment create(Reservation reservation, boolean alreadyPaid, BigDecimal amount) {
+        if (alreadyPaid) {
+            throw new BusinessException(ErrorCode.ALREADY_PAID);
+        }
 
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException(ErrorCode.INVALID_DEPOSIT_AMOUNT);
         }
+
+        reservation.validatePaymentAmount(amount);
 
         return Payment.builder()
                 .reservation(reservation)
