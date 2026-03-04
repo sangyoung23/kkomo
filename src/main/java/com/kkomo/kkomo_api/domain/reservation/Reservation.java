@@ -25,6 +25,10 @@ public class Reservation extends BaseEntity {
     @Column(name = "reservation_id")
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
