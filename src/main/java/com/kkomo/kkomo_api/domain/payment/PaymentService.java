@@ -23,8 +23,12 @@ public class PaymentService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
+        reservation.validatePayable();
+
+        boolean alreadyPaid = paymentRepository.existsByReservationAndStatus(reservation, PaymentStatus.SUCCESS);
+
         Payment payment = Payment.create(
-                reservation, amount
+                reservation, alreadyPaid, amount
         );
 
         return paymentRepository.save(payment);
