@@ -1,16 +1,17 @@
-package com.kkomo.kkomo_api.domain.reservation;
+package com.kkomo.kkomo_api.domain.payment;
 
 import com.kkomo.kkomo_api.PetFixture;
 import com.kkomo.kkomo_api.ShopFixture;
 import com.kkomo.kkomo_api.UserFixture;
 import com.kkomo.kkomo_api.domain.pet.Pet;
 import com.kkomo.kkomo_api.domain.pet.PetRepository;
-import com.kkomo.kkomo_api.domain.reservation.dto.ReservationCreateRequest;
+import com.kkomo.kkomo_api.domain.reservation.Reservation;
+import com.kkomo.kkomo_api.domain.reservation.ReservationRepository;
+import com.kkomo.kkomo_api.domain.reservation.ReservationStatus;
 import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.domain.shop.ShopRepository;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlotRepository;
-import com.kkomo.kkomo_api.domain.timeslot.TimeSlotStatus;
 import com.kkomo.kkomo_api.domain.user.User;
 import com.kkomo.kkomo_api.domain.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -31,16 +32,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles("test")
-class ReservationConcurrencyTest {
+class PaymentConcurrencyTest {
 
     @Autowired
-    ReservationService reservationService;
+    PaymentService paymentService;
+
+    @Autowired
+    PaymentRepository paymentRepository;
 
     @Autowired
     ReservationRepository reservationRepository;
-
-    @Autowired
-    TimeSlotRepository timeSlotRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -51,9 +52,12 @@ class ReservationConcurrencyTest {
     @Autowired
     ShopRepository shopRepository;
 
+    @Autowired
+    TimeSlotRepository timeSlotRepository;
+
     @Test
-    @DisplayName("동일한 타임슬롯에 동시에 예약 요청이 들어와도 최종적으로 하나만 생성된다")
-    void shouldCreateOnlyOneReservationUnderConcurrentRequests() throws Exception {
+    @DisplayName("동시에 결제 성공 요청이 들어와도 하나만 성공한다")
+    void shouldCompletePaymentOnlyOnceUnderConcurrentRequests() throws Exception {
 
         // given
         User owner = userRepository.save(UserFixture.owner());
@@ -70,34 +74,28 @@ class ReservationConcurrencyTest {
                 )
         );
 
-        int threadCount = 10;
+        Reservation reservation = reservationRepository.save(
+                Reservation.create(customer, pet, shop, timeSlot, BigDecimal.valueOf(10000))
+        );
+
+        Payment payment = paymentRepository.save(
+                Payment.create(reservation, false, BigDecimal.valueOf(10000))
+        );
+
+        int threadCount = 2;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
-
         AtomicInteger successCount = new AtomicInteger();
         AtomicInteger failCount = new AtomicInteger();
 
-        Long customerId = customer.getId();
-        Long petId = pet.getId();
-        Long shopId = shop.getId();
-        Long timeSlotId = timeSlot.getId();
+        Long paymentId = payment.getId();
 
         // when
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
-                    ReservationCreateRequest request =
-                            new ReservationCreateRequest(
-                                    customerId,
-                                    petId,
-                                    shopId,
-                                    timeSlotId,
-                                    BigDecimal.valueOf(10000)
-                            );
-
-                    reservationService.createReservation(request);
+                    paymentService.completePayment(paymentId);
                     successCount.incrementAndGet();
-
                 } catch (ObjectOptimisticLockingFailureException e) {
                     failCount.incrementAndGet();
                 } finally {
@@ -110,9 +108,12 @@ class ReservationConcurrencyTest {
         executor.shutdown();
 
         // then
-        assertThat(reservationRepository.count()).isEqualTo(1);
+        Payment updatedPayment = paymentRepository.findById(paymentId).orElseThrow();
+        Reservation updatedReservation = reservationRepository.findById(reservation.getId()).orElseThrow();
+
         assertThat(successCount.get()).isEqualTo(1);
-        TimeSlot updated = timeSlotRepository.findById(timeSlotId).orElseThrow();
-        assertThat(updated.getStatus()).isEqualTo(TimeSlotStatus.RESERVED);
+        assertThat(failCount.get()).isEqualTo(1);
+        assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
+        assertThat(updatedReservation.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
     }
 }
