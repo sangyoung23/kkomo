@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -75,7 +74,6 @@ class ReservationConcurrencyTest {
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         AtomicInteger successCount = new AtomicInteger();
-        AtomicInteger failCount = new AtomicInteger();
 
         Long customerId = customer.getId();
         Long petId = pet.getId();
@@ -91,15 +89,13 @@ class ReservationConcurrencyTest {
                                     customerId,
                                     petId,
                                     shopId,
-                                    timeSlotId,
-                                    BigDecimal.valueOf(10000)
+                                    timeSlotId
                             );
 
                     reservationService.createReservation(request);
                     successCount.incrementAndGet();
 
-                } catch (ObjectOptimisticLockingFailureException e) {
-                    failCount.incrementAndGet();
+                } catch (Exception ignored) {
                 } finally {
                     latch.countDown();
                 }

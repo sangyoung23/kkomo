@@ -19,7 +19,7 @@ public class PaymentService {
 
     // 결제 요청
     @Transactional
-    public Payment requestPayment(Long reservationId, BigDecimal amount) {
+    public Payment requestPayment(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
@@ -27,9 +27,9 @@ public class PaymentService {
 
         boolean alreadyPaid = paymentRepository.existsByReservationAndStatus(reservation, PaymentStatus.SUCCESS);
 
-        Payment payment = Payment.create(
-                reservation, alreadyPaid, amount
-        );
+        BigDecimal depositAmount = reservation.getDepositAmount();
+
+        Payment payment = Payment.create(reservation, alreadyPaid, depositAmount);
 
         return paymentRepository.save(payment);
     }

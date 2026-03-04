@@ -17,5 +17,4 @@ public class ReservationCreateRequest {
     private Long petId;
     private Long shopId;
     private Long timeSlotId;
-    private BigDecimal depositAmount;
 }

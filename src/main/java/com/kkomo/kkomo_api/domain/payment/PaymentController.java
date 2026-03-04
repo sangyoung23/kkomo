@@ -17,7 +17,7 @@ public class PaymentController {
     // 결제 요청
     @PostMapping
     public ApiResponse<PaymentResponse> requestPayment(@RequestBody PaymentRequest request) {
-        Payment payment = paymentService.requestPayment(request.getReservationId(), request.getAmount());
+        Payment payment = paymentService.requestPayment(request.getReservationId());
         return ApiResponse.success(PaymentResponse.from(payment));
     }
 

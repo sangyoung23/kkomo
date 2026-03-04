@@ -35,7 +35,6 @@ class PaymentServiceTest {
 
         // given
         Long reservationId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(10000);
 
         Reservation reservation = mock(Reservation.class);
 
@@ -48,7 +47,7 @@ class PaymentServiceTest {
                 .thenReturn(savedPayment);
 
         // when
-        Payment result = paymentService.requestPayment(reservationId, amount);
+        Payment result = paymentService.requestPayment(reservationId);
 
         // then
         assertThat(result).isEqualTo(savedPayment);
@@ -61,14 +60,13 @@ class PaymentServiceTest {
 
         // given
         Long reservationId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(10000);
 
         when(reservationRepository.findById(reservationId))
                 .thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() ->
-                paymentService.requestPayment(reservationId, amount)
+                paymentService.requestPayment(reservationId)
         )
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.RESERVATION_NOT_FOUND.getMessage());

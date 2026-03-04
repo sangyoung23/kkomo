@@ -43,7 +43,6 @@ class ReservationServiceTest {
                 .petId(2L)
                 .shopId(3L)
                 .timeSlotId(4L)
-                .depositAmount(BigDecimal.valueOf(10000))
                 .build();
     }
 
