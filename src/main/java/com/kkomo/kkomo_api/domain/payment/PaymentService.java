@@ -27,9 +27,7 @@ public class PaymentService {
                 reservation, amount
         );
 
-        paymentRepository.save(payment);
-
-        return payment;
+        return paymentRepository.save(payment);
     }
 
     // 결제 성공
