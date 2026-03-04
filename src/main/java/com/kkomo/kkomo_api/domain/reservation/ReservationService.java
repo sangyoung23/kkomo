@@ -15,12 +15,13 @@ import com.kkomo.kkomo_api.domain.user.UserRepository;
 import com.kkomo.kkomo_api.global.exception.BusinessException;
 import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -57,10 +58,8 @@ public class ReservationService {
     // 예약 생성
     @Transactional
     public Long createReservation(ReservationCreateRequest request) {
-
         TimeSlot timeSlot = timeSlotRepository.findById(request.getTimeSlotId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.TIME_SLOT_NOT_FOUND));
-
         timeSlot.validateReservable();
 
         User user = userRepository.findById(request.getUserId())
@@ -74,10 +73,9 @@ public class ReservationService {
 
         timeSlot.reserve();
 
-        Reservation reservation = Reservation.create(
-                user, pet, shop, timeSlot, request.getDepositAmount()
-        );
+        BigDecimal depositAmount = shop.getDepositAmount();
 
+        Reservation reservation = Reservation.create(user, pet, shop, timeSlot, depositAmount);
         Reservation saved = reservationRepository.save(reservation);
 
         return saved.getId();
