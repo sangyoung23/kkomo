@@ -64,6 +64,18 @@ public class Reservation extends BaseEntity {
                 .build();
     }
 
+    public void validatePaymentAmount(BigDecimal amount) {
+        if (!this.depositAmount.equals(amount)) {
+            throw new BusinessException(ErrorCode.INVALID_PAYMENT_AMOUNT);
+        }
+    }
+
+    public void validatePayable() {
+        if (this.status != ReservationStatus.WAITING_PAYMENT) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
+    }
+
     public void confirm() {
         if (this.status != ReservationStatus.WAITING_PAYMENT) {
             throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
