@@ -37,6 +37,17 @@ class ReservationTest {
     // ===== create() =====
 
     @Test
+    @DisplayName("정상 생성 시 결제 만료 시간은 10분 후로 설정된다")
+    void createReservation_setPaymentExpireAt() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThat(reservation.getPaymentExpireAt())
+                .isAfter(LocalDateTime.now().plusMinutes(9));
+    }
+
+    @Test
     @DisplayName("정상 생성 시 상태는 WAITING_PAYMENT이다")
     void create_success() {
         TimeSlot timeSlot = createReservedTimeSlot();
