@@ -19,6 +19,7 @@ public enum ErrorCode {
 
     // USER (3000)
     USER_NOT_FOUND(3001, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    USER_NO_SHOW_LIMIT_EXCEEDED(3002, HttpStatus.FORBIDDEN, "노쇼 횟수 초과로 예약이 제한되었습니다."),
 
     // PET (4000)
     PET_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "펫을 찾을 수 없습니다."),
