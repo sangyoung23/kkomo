@@ -178,6 +178,32 @@ class ReservationTest {
                 .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
     }
 
+    // ===== noShow() =====
+
+    @Test
+    @DisplayName("CONFIRMED 상태에서 noShow 하면 NO_SHOW로 변경된다")
+    void noShow_success() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        reservation.confirm();
+        reservation.noShow();
+
+        assertThat(reservation.getStatus())
+                .isEqualTo(ReservationStatus.NO_SHOW);
+    }
+
+    @Test
+    @DisplayName("CONFIRMED가 아닌 상태에서 noShow 하면 예외 발생")
+    void noShow_fail_whenNotConfirmed() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatThrownBy(reservation::noShow)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
+    }
+
     // ===== validatePaymentAmount() =====
 
     @Test

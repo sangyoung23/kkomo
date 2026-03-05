@@ -62,6 +62,8 @@ public class Reservation extends BaseEntity {
             throw new BusinessException(ErrorCode.INVALID_DEPOSIT_AMOUNT);
         }
 
+        user.validateReservable();
+
         return Reservation.builder()
                 .user(user)
                 .pet(pet)
@@ -125,6 +127,18 @@ public class Reservation extends BaseEntity {
         this.validateCancelable();
 
         this.status = ReservationStatus.CANCELLED;
+
+        this.timeSlot.release();
+    }
+
+    public void noShow() {
+        if (this.status != ReservationStatus.CONFIRMED) {
+            throw  new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
+
+        this.status = ReservationStatus.NO_SHOW;
+
+        this.user.increaseNoShowCount();
 
         this.timeSlot.release();
     }

@@ -112,5 +112,21 @@ public class ReservationQueryRepositoryImpl implements ReservationQueryRepositor
                 )
                 .fetch();
     }
+
+    @Override
+    public List<Reservation> getNoShowReservations(LocalDateTime now) {
+
+        QReservation reservation = QReservation.reservation;
+        QTimeSlot timeSlot = QTimeSlot.timeSlot;
+
+        return queryFactory
+                .selectFrom(reservation)
+                .join(reservation.timeSlot, timeSlot)
+                .where(
+                        reservation.status.eq(ReservationStatus.CONFIRMED),
+                        timeSlot.startDateTime.before(now.minusMinutes(15))
+                )
+                .fetch();
+    }
 }
 
