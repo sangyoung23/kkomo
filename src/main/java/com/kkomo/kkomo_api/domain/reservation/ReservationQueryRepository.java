@@ -16,5 +16,7 @@ public interface ReservationQueryRepository {
     Page<OwnerReservationListResponse> getOwnerReservations(Long shopId, Pageable pageable);
     // 결제 기한이 만료된 예약 목록 조회
     List<Reservation> getExpiredReservations(LocalDateTime now);
+    // 노쇼 대상 예약 조회
+    List<Reservation> getNoShowReservations(LocalDateTime now);
 }
 
