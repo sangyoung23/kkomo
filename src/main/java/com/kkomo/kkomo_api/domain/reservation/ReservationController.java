@@ -20,6 +20,7 @@ public class ReservationController {
 
     // TODO
     // 1. 예약 조회 Spring Security 적용 후 AuthenticationPrincipal 방식으로 변경
+    // 2. 예약 취소 JWT 기반으로
 
     // 고객용 예약 목록 조회
     @GetMapping("/customer")
@@ -53,7 +54,9 @@ public class ReservationController {
 
     // 예약 취소
     @PostMapping("/{reservationId}/cancel")
-    public ApiResponse<Long> cancelReservation(@PathVariable Long reservationId) {
-        return ApiResponse.success(reservationService.cancelReservation(reservationId));
+    public ApiResponse<Void> cancelReservation(@PathVariable Long reservationId, @RequestParam Long userId) {
+        reservationService.cancelReservation(reservationId, userId);
+
+        return ApiResponse.success();
     }
 }
