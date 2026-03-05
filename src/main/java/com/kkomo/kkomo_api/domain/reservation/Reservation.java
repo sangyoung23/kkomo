@@ -11,6 +11,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_reservations")
@@ -52,6 +53,9 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal depositAmount;
 
+    @Column(nullable = false)
+    private LocalDateTime paymentExpireAt;
+
     public static Reservation create(User user, Pet pet, Shop shop, TimeSlot timeSlot, BigDecimal depositAmount) {
 
         if (depositAmount == null || depositAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -65,6 +69,9 @@ public class Reservation extends BaseEntity {
                 .timeSlot(timeSlot)
                 .depositAmount(depositAmount)
                 .status(ReservationStatus.WAITING_PAYMENT)
+                // TODO
+                // 1. LocalDateTime.now().plusMinutes(10) 방식이 아니라 Clock이나 TimeProvider로 변경
+                .paymentExpireAt(LocalDateTime.now().plusMinutes(10))
                 .build();
     }
 
