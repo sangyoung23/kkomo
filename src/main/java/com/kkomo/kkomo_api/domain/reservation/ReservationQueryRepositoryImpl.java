@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -96,6 +97,20 @@ public class ReservationQueryRepositoryImpl implements ReservationQueryRepositor
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public List<Reservation> getExpiredReservations(LocalDateTime now) {
+
+        QReservation reservation = QReservation.reservation;
+
+        return queryFactory
+                .selectFrom(reservation)
+                .where(
+                        reservation.status.eq(ReservationStatus.WAITING_PAYMENT),
+                        reservation.paymentExpireAt.before(now)
+                )
+                .fetch();
     }
 }
 
