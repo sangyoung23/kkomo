@@ -96,14 +96,14 @@ public class ReservationService {
 
     // 예약 취소
     @Transactional
-    public Long cancelReservation(Long reservationId) {
+    public void cancelReservation(Long reservationId, Long userId) {
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        reservation.cancel();
+        reservation.validateCancelAuthority(userId);
 
-        return reservation.getId();
+        reservation.cancel();
     }
 
 }

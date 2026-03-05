@@ -2,6 +2,7 @@ package com.kkomo.kkomo_api.domain.reservation;
 
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlotStatus;
+import com.kkomo.kkomo_api.domain.user.User;
 import com.kkomo.kkomo_api.global.exception.BusinessException;
 import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -11,14 +12,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ReservationTest {
 
     private TimeSlot createReservedTimeSlot() {
         TimeSlot timeSlot = TimeSlot.create(
                 null,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusHours(1)
+                LocalDateTime.now().plusDays(2),
+                LocalDateTime.now().plusDays(2).plusHours(1)
         );
         timeSlot.reserve();
         return timeSlot;
@@ -106,6 +109,32 @@ class ReservationTest {
                 .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
     }
 
+    // ===== complete() =====
+
+    @Test
+    @DisplayName("CONFIRMED 상태에서 complete 하면 COMPLETED로 변경된다")
+    void complete_success() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        reservation.confirm();
+        reservation.complete();
+
+        assertThat(reservation.getStatus())
+                .isEqualTo(ReservationStatus.COMPLETED);
+    }
+
+    @Test
+    @DisplayName("CONFIRMED가 아닌 상태에서 complete 하면 예외 발생")
+    void complete_fail_whenNotConfirmed() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatThrownBy(reservation::complete)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
+    }
+
     // ===== cancel() =====
 
     @Test
@@ -147,6 +176,118 @@ class ReservationTest {
         assertThatThrownBy(reservation::cancel)
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
+    }
+
+    // ===== validatePaymentAmount() =====
+
+    @Test
+    @DisplayName("결제 금액이 일치하면 예외가 발생하지 않는다")
+    void validatePaymentAmount_success() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatCode(() ->
+                reservation.validatePaymentAmount(BigDecimal.valueOf(10000)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("결제 금액이 다르면 예외 발생")
+    void validatePaymentAmount_fail() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatThrownBy(() ->
+                reservation.validatePaymentAmount(BigDecimal.valueOf(5000)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.INVALID_PAYMENT_AMOUNT.getMessage());
+    }
+
+    // ===== validatePayable() =====
+
+    @Test
+    @DisplayName("WAITING_PAYMENT 상태이면 결제 가능")
+    void validatePayable_success() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatCode(reservation::validatePayable)
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("WAITING_PAYMENT 상태가 아니면 결제 불가")
+    void validatePayable_fail() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        reservation.confirm();
+
+        assertThatThrownBy(reservation::validatePayable)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
+    }
+
+    // ===== validateCancelable() =====
+
+    @Test
+    @DisplayName("예약 시작 24시간 이전이면 취소 가능")
+    void validateCancelable_success() {
+
+        TimeSlot timeSlot = TimeSlot.create(
+                null,
+                LocalDateTime.now().plusDays(2),
+                LocalDateTime.now().plusDays(2).plusHours(1)
+        );
+        timeSlot.reserve();
+
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatCode(reservation::validateCancelable)
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("예약 시작 24시간 이내이면 취소 불가")
+    void validateCancelable_fail_whenWithin24Hours() {
+
+        TimeSlot timeSlot = TimeSlot.create(
+                null,
+                LocalDateTime.now().plusHours(10),
+                LocalDateTime.now().plusHours(11)
+        );
+        timeSlot.reserve();
+
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatThrownBy(reservation::validateCancelable)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.CANCEL_NOT_ALLOWED.getMessage());
+    }
+
+    // ===== validateCancelAuthority() =====
+
+    @Test
+    @DisplayName("예약자가 아니면 취소 권한 없음")
+    void validateCancelAuthority_fail() {
+
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(1L);
+
+        TimeSlot timeSlot = createReservedTimeSlot();
+
+        Reservation reservation = Reservation.create(
+                user,
+                null,
+                null,
+                timeSlot,
+                BigDecimal.valueOf(10000)
+        );
+
+        assertThatThrownBy(() ->
+                reservation.validateCancelAuthority(2L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.ACCESS_DENIED.getMessage());
     }
 }
 

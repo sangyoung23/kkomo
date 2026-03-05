@@ -87,6 +87,26 @@ public class Reservation extends BaseEntity {
         }
     }
 
+    public void validateCancelable() {
+        if (this.status == ReservationStatus.CANCELLED
+                || this.status == ReservationStatus.COMPLETED
+                || this.status == ReservationStatus.NO_SHOW) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
+
+        if (this.timeSlot.getStartDateTime()
+                .minusHours(24)
+                .isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.CANCEL_NOT_ALLOWED);
+        }
+    }
+
+    public void validateCancelAuthority(Long userId) {
+        if (!this.user.getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+    }
+
     public void confirm() {
         if (this.status != ReservationStatus.WAITING_PAYMENT) {
             throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
@@ -102,11 +122,7 @@ public class Reservation extends BaseEntity {
     }
 
     public void cancel() {
-        if (this.status == ReservationStatus.CANCELLED
-                || this.status == ReservationStatus.COMPLETED
-                || this.status == ReservationStatus.NO_SHOW) {
-            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
-        }
+        this.validateCancelable();
 
         this.status = ReservationStatus.CANCELLED;
 

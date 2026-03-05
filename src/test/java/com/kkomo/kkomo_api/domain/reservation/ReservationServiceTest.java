@@ -226,12 +226,11 @@ class ReservationServiceTest {
 
         when(reservationRepository.findById(1L))
                 .thenReturn(Optional.of(reservation));
-        when(reservation.getId()).thenReturn(1L);
 
-        Long result = reservationService.cancelReservation(1L);
+        // when
+        reservationService.cancelReservation(1L, 2L);
 
-        // when & then
-        assertThat(result).isEqualTo(1L);
+        // then
         verify(reservation).cancel();
     }
 
@@ -245,7 +244,7 @@ class ReservationServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                reservationService.cancelReservation(1L)
+                reservationService.cancelReservation(1L, 2L)
         )
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.RESERVATION_NOT_FOUND.getMessage());
