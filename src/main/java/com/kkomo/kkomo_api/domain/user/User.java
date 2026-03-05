@@ -2,6 +2,8 @@ package com.kkomo.kkomo_api.domain.user;
 
 import com.kkomo.kkomo_api.domain.shop.Shop;
 import com.kkomo.kkomo_api.global.common.BaseEntity;
+import com.kkomo.kkomo_api.global.exception.BusinessException;
+import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,6 +51,12 @@ public class User extends BaseEntity {
 
     public void increaseNoShowCount() {
         this.noShowCount++;
+    }
+
+    public void validateReservable() {
+        if (this.noShowCount >= 3) {
+            throw new BusinessException(ErrorCode.USER_NO_SHOW_LIMIT_EXCEEDED);
+        }
     }
 
     public void delete() {
