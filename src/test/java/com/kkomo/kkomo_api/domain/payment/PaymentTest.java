@@ -3,6 +3,7 @@ package com.kkomo.kkomo_api.domain.payment;
 import com.kkomo.kkomo_api.domain.reservation.Reservation;
 import com.kkomo.kkomo_api.domain.reservation.ReservationStatus;
 import com.kkomo.kkomo_api.domain.timeslot.TimeSlot;
+import com.kkomo.kkomo_api.domain.user.User;
 import com.kkomo.kkomo_api.global.exception.BusinessException;
 import com.kkomo.kkomo_api.global.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -12,15 +13,23 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PaymentTest {
 
     // ===== 테스트용 팩토리 =====
     private static class TestFactory {
 
+        static User createUser() {
+            User user = mock(User.class);
+            when(user.getId()).thenReturn(1L);
+            return user;
+        }
+
         static Reservation createReservationWithStatus(ReservationStatus status) {
             TimeSlot timeSlot = createReservedTimeSlot();
-            Reservation reservation = Reservation.create(null, null, null, timeSlot, BigDecimal.valueOf(10000));
+            Reservation reservation = Reservation.create(createUser(), null, null, timeSlot, BigDecimal.valueOf(10000));
 
             try {
                 var statusField = Reservation.class.getDeclaredField("status");
@@ -34,13 +43,20 @@ class PaymentTest {
         }
 
         static TimeSlot createReservedTimeSlot() {
-            TimeSlot timeSlot = TimeSlot.create(null, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+            LocalDateTime start = LocalDateTime.now().plusDays(3);
+
+            TimeSlot timeSlot = TimeSlot.create(
+                    null,
+                    start,
+                    start.plusHours(1)
+            );
+
             timeSlot.reserve();
             return timeSlot;
         }
 
         static Reservation createPendingReservation() {
-            return Reservation.create(null, null, null, createReservedTimeSlot(), BigDecimal.valueOf(10000));
+            return Reservation.create(createUser(), null, null, createReservedTimeSlot(), BigDecimal.valueOf(10000));
         }
 
         static Reservation createConfirmedReservation() {
