@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "tb_reservations")
 @Getter
+@Builder()
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(access = AccessLevel.PRIVATE)
 public class Reservation extends BaseEntity {
 
     @Id
@@ -75,6 +75,12 @@ public class Reservation extends BaseEntity {
                 // 1. LocalDateTime.now().plusMinutes(10) 방식이 아니라 Clock이나 TimeProvider로 변경
                 .paymentExpireAt(LocalDateTime.now().plusMinutes(10))
                 .build();
+    }
+
+    public void validateReviewable() {
+        if (this.status != ReservationStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATE);
+        }
     }
 
     public void validatePaymentAmount(BigDecimal amount) {
