@@ -27,9 +27,15 @@ class ReservationTest {
         return timeSlot;
     }
 
+    private User createUser() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(1L);
+        return user;
+    }
+
     private Reservation createPendingReservation(TimeSlot timeSlot) {
         return Reservation.create(
-                null,
+                createUser(),
                 null,
                 null,
                 timeSlot,
@@ -67,7 +73,7 @@ class ReservationTest {
         TimeSlot timeSlot = createReservedTimeSlot();
 
         assertThatThrownBy(() ->
-                Reservation.create(null, null, null, timeSlot, null)
+                Reservation.create(createUser(), null, null, timeSlot, null)
         ).isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.INVALID_DEPOSIT_AMOUNT.getMessage());
     }
@@ -78,7 +84,7 @@ class ReservationTest {
         TimeSlot timeSlot = createReservedTimeSlot();
 
         assertThatThrownBy(() ->
-                Reservation.create(null, null, null, timeSlot, BigDecimal.valueOf(-1))
+                Reservation.create(createUser(), null, null, timeSlot, BigDecimal.valueOf(-1))
         ).isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.INVALID_DEPOSIT_AMOUNT.getMessage());
     }
@@ -204,6 +210,19 @@ class ReservationTest {
                 .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
     }
 
+    // ===== validateReviewable() =====
+
+    @Test
+    @DisplayName("예약 상태가 COMPLETED가 아니라면 예외 발생")
+    void validateReviewable_fail() {
+        TimeSlot timeSlot = createReservedTimeSlot();
+        Reservation reservation = createPendingReservation(timeSlot);
+
+        assertThatThrownBy(reservation::validateReviewable)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.INVALID_RESERVATION_STATE.getMessage());
+    }
+
     // ===== validatePaymentAmount() =====
 
     @Test
@@ -297,18 +316,9 @@ class ReservationTest {
     @DisplayName("예약자가 아니면 취소 권한 없음")
     void validateCancelAuthority_fail() {
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(1L);
-
         TimeSlot timeSlot = createReservedTimeSlot();
 
-        Reservation reservation = Reservation.create(
-                user,
-                null,
-                null,
-                timeSlot,
-                BigDecimal.valueOf(10000)
-        );
+        Reservation reservation = createPendingReservation(timeSlot);
 
         assertThatThrownBy(() ->
                 reservation.validateCancelAuthority(2L))

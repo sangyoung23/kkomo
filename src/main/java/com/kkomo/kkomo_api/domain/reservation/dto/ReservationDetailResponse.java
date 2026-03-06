@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class ReservationDetailResponse {
 

@@ -41,6 +41,11 @@ class PaymentServiceTest {
         when(reservationRepository.findById(reservationId))
                 .thenReturn(Optional.of(reservation));
 
+        when(reservation.getDepositAmount())
+                .thenReturn(BigDecimal.valueOf(10000));
+
+        doNothing().when(reservation).validatePayable();
+
         Payment savedPayment = mock(Payment.class);
 
         when(paymentRepository.save(any()))
