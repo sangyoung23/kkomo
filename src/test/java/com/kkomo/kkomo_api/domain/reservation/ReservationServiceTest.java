@@ -60,6 +60,9 @@ class ReservationServiceTest {
         Pet pet = mock(Pet.class);
         Shop shop = mock(Shop.class);
 
+        when(shop.getDepositAmount())
+                .thenReturn(BigDecimal.valueOf(10000));
+
         when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
         when(petRepository.findById(2L))
