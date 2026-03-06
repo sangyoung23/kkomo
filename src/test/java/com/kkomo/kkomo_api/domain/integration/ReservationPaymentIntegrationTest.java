@@ -57,8 +57,10 @@ class ReservationPaymentIntegrationTest {
         User customer = userRepository.save(UserFixture.customer());
         Pet pet = petRepository.save(PetFixture.pet(customer));
 
+        LocalDateTime start = LocalDateTime.now().plusDays(3);
+
         TimeSlot timeSlot = timeSlotRepository.save(
-                TimeSlot.create(shop, LocalDateTime.now(), LocalDateTime.now().plusHours(1))
+                TimeSlot.create(shop, start, start.plusHours(1))
         );
 
         ReservationCreateRequest reservationRequest = new ReservationCreateRequest(
@@ -93,8 +95,10 @@ class ReservationPaymentIntegrationTest {
         User customer = userRepository.save(UserFixture.customer());
         Pet pet = petRepository.save(PetFixture.pet(customer));
 
+        LocalDateTime start = LocalDateTime.now().plusDays(3);
+
         TimeSlot timeSlot = timeSlotRepository.save(
-                TimeSlot.create(shop, LocalDateTime.now(), LocalDateTime.now().plusHours(1))
+                TimeSlot.create(shop, start, start.plusHours(1))
         );
 
         ReservationCreateRequest reservationRequest = new ReservationCreateRequest(
@@ -129,8 +133,10 @@ class ReservationPaymentIntegrationTest {
         User customer = userRepository.save(UserFixture.customer());
         Pet pet = petRepository.save(PetFixture.pet(customer));
 
+        LocalDateTime start = LocalDateTime.now().plusDays(3);
+
         TimeSlot timeSlot = timeSlotRepository.save(
-                TimeSlot.create(shop, LocalDateTime.now(), LocalDateTime.now().plusHours(1))
+                TimeSlot.create(shop, start, start.plusHours(1))
         );
 
         ReservationCreateRequest reservationRequest = new ReservationCreateRequest(
