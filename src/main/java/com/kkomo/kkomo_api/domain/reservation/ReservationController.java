@@ -6,6 +6,7 @@ import com.kkomo.kkomo_api.domain.reservation.dto.ReservationCreateRequest;
 import com.kkomo.kkomo_api.domain.reservation.dto.ReservationDetailResponse;
 import com.kkomo.kkomo_api.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
@@ -18,13 +19,11 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    // TODO
-    // 1. 예약 조회 Spring Security 적용 후 AuthenticationPrincipal 방식으로 변경
-    // 2. 예약 취소 JWT 기반으로
-
     // 고객용 예약 목록 조회
     @GetMapping("/customer")
-    public ApiResponse<Page<CustomerReservationListResponse>> getCustomerReservations(@RequestParam Long userId, Pageable pageable) {
+    public ApiResponse<Page<CustomerReservationListResponse>> getCustomerReservations(Authentication authentication, Pageable pageable) {
+        Long userId = (Long) authentication.getPrincipal();
+
         return ApiResponse.success(reservationService.getCustomerReservations(userId, pageable));
     }
 
@@ -54,7 +53,9 @@ public class ReservationController {
 
     // 예약 취소
     @PostMapping("/{reservationId}/cancel")
-    public ApiResponse<Void> cancelReservation(@PathVariable Long reservationId, @RequestParam Long userId) {
+    public ApiResponse<Void> cancelReservation(Authentication authentication ,@PathVariable Long reservationId) {
+        Long userId = (Long) authentication.getPrincipal();
+
         reservationService.cancelReservation(reservationId, userId);
 
         return ApiResponse.success();
