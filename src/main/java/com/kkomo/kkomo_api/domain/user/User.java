@@ -23,10 +23,10 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String password;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String phoneNumber;
 
     @Column(nullable = false, length = 100)
@@ -35,6 +35,13 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private OAuthProvider provider;
+
+    @Column(length = 100)
+    private String providerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id")
