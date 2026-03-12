@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.kkomo.kkomo_api.domain")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
